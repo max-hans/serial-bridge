@@ -1,58 +1,81 @@
 import { SerialPort } from "serialport";
 import { ReadlineParser } from "@serialport/parser-readline";
-import { Server } from "socket.io";
 import identifiers from "../identifiers.json";
 import { getDevice } from "./helpers";
 import { BAUD_RATE, RECONNECT_INTERVAL } from "../CONSTANTS";
 
-let port: SerialPort | null = null;
+import { Server } from "socket.io";
 
-const io = new Server(3000, {
+import { createServer } from "http";
+
+import express from "express";
+import { join } from "path";
+const app = express();
+
+app.use(express.static("./static"));
+
+app.get("*", (req, res) => {
+  res.sendFile(join(__dirname, "../static/index.html"));
+});
+
+const server = createServer(app);
+
+const io = new Server(server);
+
+const port = process.env.PORT || 3000;
+
+let serialPort: SerialPort | null = null;
+
+server.listen(port, () => {
+  console.log("Server listening at port %d", port);
+});
+
+/* const io = new Server(3000, {
   cors: {
     origin: "*",
   },
-});
+}); */
 
 const connectSerialPort = async () => {
   const devicePath = await getDevice(identifiers);
   if (!devicePath) return;
-  port = new SerialPort({ path: devicePath, baudRate: BAUD_RATE });
+  serialPort = new SerialPort({ path: devicePath, baudRate: BAUD_RATE });
 
-  const parser = port.pipe(new ReadlineParser({ delimiter: "\r\n" }));
+  const parser = serialPort.pipe(new ReadlineParser({ delimiter: "\r\n" }));
 
   parser.on("data", (chunk) => {
     console.log(chunk);
     io.emit("/", JSON.stringify({ message: chunk }));
   });
 
-  port.on("open", () => {
+  serialPort.on("open", () => {
     console.log("Serial port connected");
   });
 
-  port.on("close", () => {
+  serialPort.on("close", () => {
     console.log("Serial port disconnected");
-    port?.removeAllListeners();
+    serialPort?.removeAllListeners();
     parser.removeAllListeners();
     parser.destroy();
-    port?.destroy();
-    port = null;
+    serialPort?.destroy();
+    serialPort = null;
   });
 
-  port.on("error", (err) => {
+  serialPort.on("error", (err) => {
     console.error(`Serial port error: ${err}`);
-    if (port) {
+    if (serialPort) {
       try {
-        port?.close();
+        serialPort?.close();
       } catch (e) {
         console.log(e);
       }
     }
-    port = null;
+    serialPort = null;
   });
 };
 
 setInterval(() => {
-  if (!port || !port.isOpen) {
+  if (!serialPort || !serialPort.isOpen) {
     console.log("Reconnecting...");
     connectSerialPort();
   }
