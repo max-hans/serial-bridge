@@ -3,13 +3,14 @@ import { ReadlineParser } from "@serialport/parser-readline";
 import identifiers from "../identifiers.json";
 import { getDevice } from "./helpers";
 import { BAUD_RATE, RECONNECT_INTERVAL } from "../CONSTANTS";
-
 import { Server } from "socket.io";
-
 import { createServer } from "http";
-
 import express from "express";
 import { join } from "path";
+
+import dotenv from "dotenv";
+dotenv.config();
+
 const app = express();
 
 app.use(express.static("./static"));
@@ -80,3 +81,7 @@ setInterval(() => {
     connectSerialPort();
   }
 }, RECONNECT_INTERVAL);
+
+setInterval(() => {
+  io.emit("/", JSON.stringify({ message: "PING,0" }));
+}, 1000);
