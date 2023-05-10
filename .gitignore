@@ -1,6 +1,7 @@
 identifiers.json
 static
-
+build
+src/**/*.js
 # Logs
 static/
 logs
