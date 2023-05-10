@@ -13,10 +13,10 @@ dotenv.config();
 
 const app = express();
 
-app.use(express.static("./static"));
+app.use(express.static(join(__dirname, "..", "static")));
 
 app.get("*", (req, res) => {
-  res.sendFile(join(__dirname, "../static/index.html"));
+  res.sendFile(join(__dirname, "..", "static", "index.html"));
 });
 
 const server = createServer(app);
@@ -31,11 +31,6 @@ server.listen(port, () => {
   console.log("Server listening at port %d", port);
 });
 
-/* const io = new Server(3000, {
-  cors: {
-    origin: "*",
-  },
-}); */
 
 const connectSerialPort = async () => {
   const devicePath = await getDevice(identifiers);
