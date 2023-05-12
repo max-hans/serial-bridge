@@ -13,10 +13,14 @@ dotenv.config();
 
 const app = express();
 
-app.use(express.static(join(__dirname, "..", "static")));
 
+const targetFolterFrags = [__dirname, "..", "..", "map-react", "dist"]
+
+app.use(express.static(join(...targetFolterFrags)));
+
+console.log(targetFolterFrags)
 app.get("*", (req, res) => {
-  res.sendFile(join(__dirname, "..", "static", "index.html"));
+  res.sendFile(join(...targetFolterFrags,"index.html"));
 });
 
 const server = createServer(app);
