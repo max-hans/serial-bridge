@@ -2,7 +2,7 @@ import { SerialPort } from "serialport";
 import { ReadlineParser } from "@serialport/parser-readline";
 import identifiers from "../identifiers.json";
 import { getDevice } from "./helpers";
-import { BAUD_RATE, RECONNECT_INTERVAL } from "../CONSTANTS";
+import { BAUD_RATE, RECONNECT_INTERVAL } from "./CONSTANTS";
 import { Server } from "socket.io";
 import { createServer } from "http";
 import express from "express";
